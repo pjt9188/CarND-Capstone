@@ -43,6 +43,9 @@ class TLDetector(object):
         config_string = rospy.get_param("/traffic_light_config")
         self.config = yaml.load(config_string)
 
+        '''
+        upcoming_red_light_pub (topic : /traffic_waypoint) publishes the stop line 'waypoint index' where the traffic light is red
+        '''
         self.upcoming_red_light_pub = rospy.Publisher('/traffic_waypoint', Int32, queue_size=1)
 
         self.bridge = CvBridge()
@@ -79,7 +82,7 @@ class TLDetector(object):
         """
         self.has_image = True
         self.camera_image = msg
-        light_wp, state = self.process_traffic_lights()
+        stop_line_wp, state = self.process_traffic_lights()
 
         '''
         Publish upcoming red lights at camera frequency.
@@ -92,9 +95,9 @@ class TLDetector(object):
             self.state = state
         elif self.state_count >= STATE_COUNT_THRESHOLD:
             self.last_state = self.state
-            light_wp = light_wp if state == TrafficLight.RED else -1
-            self.last_wp = light_wp
-            self.upcoming_red_light_pub.publish(Int32(light_wp))
+            stop_line_wp = stop_line_wp if state == TrafficLight.RED or state == TrafficLight.YELLOW else -1
+            self.last_wp = stop_line_wp
+            self.upcoming_red_light_pub.publish(Int32(stop_line_wp))
         else:
             self.upcoming_red_light_pub.publish(Int32(self.last_wp))
         self.state_count += 1
@@ -158,13 +161,13 @@ class TLDetector(object):
             for i, light in enumerate(self.lights):
                 # Get stop line waypoint index
                 line = stop_line_positions[i]
-                temp_wp_idx = self.get_closest_waypoint(line[0], line[1])
+                line_wp_idx_temp = self.get_closest_waypoint(line[0], line[1])
                 # Find closest stop line waypoint index
-                d = temp_wp_idx - car_wp_idx
+                d = line_wp_idx_temp - car_wp_idx
                 if d >= 0 and d < diff:
                     diff = d
                     closest_light = light
-                    line_wp_idx = temp_wp_idx
+                    line_wp_idx = line_wp_idx_temp
         
         if closest_light:
             state = self.get_light_state(closest_light)

@@ -87,13 +87,13 @@ class WaypointUpdater(object):
     #     self.final_waypoints_pub.publish(lane)
     
     def publish_waypoints(self, closest_idx):
-        final_lane = self.generate_lane()
+        final_lane = self.generate_lane(closest_idx)
         self.final_waypoints_pub.publish(final_lane)
     
-    def generate_lane(self):
+    def generate_lane(self, closest_idx):
         lane = Lane()
 
-        closest_idx = self.get_closest_waypoint_idx()
+        # closest_idx = self.get_closest_waypoint_idx()
         farthest_idx = closest_idx + LOOKAHEAD_WPS
         base_waypoints = self.base_waypoints.waypoints[closest_idx:farthest_idx]
 
@@ -106,13 +106,14 @@ class WaypointUpdater(object):
     
     def decelerate_waypoints(self, waypoints, closest_idx):
         temp = []
+        stop_idx = max((self.stopline_wp_idx - 4) - closest_idx, 0)   # Two waypoints back from line so front of car stops at line
+
         for i, wp in enumerate(waypoints):
             p = Waypoint()
             p.pose = wp.pose
 
-            stop_idx = max(self.stopline_wp_idx - closest_idx - 2, 0)   # Two waypoints back from line so front of car stops at line
             dist = self.distance(waypoints, i, stop_idx)
-            vel = math.sqrt(2 * MAX_DECEL * dist)       # target velocity of the i'th waypoint to decelerate the car with max deceleration
+            vel = math.sqrt(2 * (MAX_DECEL*0.3) * dist)       # target velocity of the i'th waypoint to decelerate the car with max deceleration
                                                         # This might cause high jerk so it need to be repaired
             if vel < 1.:
                 vel = 0.
