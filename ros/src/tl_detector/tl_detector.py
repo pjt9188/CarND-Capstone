@@ -89,6 +89,7 @@ class TLDetector(object):
         Each predicted state has to occur `STATE_COUNT_THRESHOLD` number
         of times till we start using it. Otherwise the previous stable state is
         used.
+        (Simillar with Low pass filter)
         '''
         if self.state != state:
             self.state_count = 0
