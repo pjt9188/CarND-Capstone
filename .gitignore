@@ -1,0 +1,7 @@
+# Created by https://www.toptal.com/developers/gitignore/api/ros
+# Edit at https://www.toptal.com/developers/gitignore?templates=ros
+
+### ROS ###
+ros/devel/
+ros/build/
+ros/src/styx/profile.tmp
